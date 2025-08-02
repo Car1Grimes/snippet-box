@@ -8,10 +8,11 @@ import (
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Server", "Go")
 	w.Write([]byte("Hello from Snippet box"))
 }
 
-func snippetView(w http.ResponseWriter, r *http.Request) {
+func viewSnippet(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil || id < 0 {
 		http.NotFound(w, r)
@@ -22,15 +23,16 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(msg))
 }
 
-func snippetCreate(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Display a form to create new snippet"))
+func createSnippet(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte("Save a new snippet"))
 }
 
 func main() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/{$}", home)
-	mux.HandleFunc("/snippet/view/{id}", snippetView)
-	mux.HandleFunc("/snippet/create", snippetCreate)
+	mux.HandleFunc("GET /{$}", home)
+	mux.HandleFunc("GET /snippet/view/{id}", viewSnippet)
+	mux.HandleFunc("POST /snippet/create", createSnippet)
 
 	//log message to notify that the server is starting
 	log.Print("The server is running on port 4000")

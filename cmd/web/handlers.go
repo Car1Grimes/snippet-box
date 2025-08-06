@@ -58,3 +58,19 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
+
+func (app *application) snippetViewRecent(w http.ResponseWriter, r *http.Request) {
+	snippets, err := app.snippets.Recent()
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.serverError(w, r, models.ErrNoRecord)
+		} else {
+			app.serverError(w, r, err)
+		}
+		return
+	}
+
+	for _, val := range snippets {
+		fmt.Fprintf(w, "%v", val)
+	}
+}

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	"github.com/Car1Grimes/snippet-box/internal/models"
+	"html/template"
 	"log/slog"
 	"net/http"
 	"os"
@@ -12,8 +13,9 @@ import (
 )
 
 type application struct {
-	logger   *slog.Logger
-	snippets *models.SnippetModel
+	logger        *slog.Logger
+	snippets      *models.SnippetModel
+	templateCache map[string]*template.Template
 }
 
 func main() {
@@ -32,12 +34,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	app := &application{
-		logger:   logger,
-		snippets: &models.SnippetModel{DB: db},
+	defer db.Close()
+
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
 	}
 
-	defer db.Close()
+	app := &application{
+		logger:        logger,
+		snippets:      &models.SnippetModel{DB: db},
+		templateCache: templateCache,
+	}
 
 	logger.Info("Starting server...", "addr", *addr)
 	err = http.ListenAndServe(*addr, app.routes())

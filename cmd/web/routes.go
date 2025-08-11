@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func (app *application) routes() *http.ServeMux {
+func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	mux.Handle("GET /static/", http.StripPrefix("/static/", fileServer))
@@ -14,5 +14,5 @@ func (app *application) routes() *http.ServeMux {
 	mux.HandleFunc("POST /snippet/create", app.snippetCreatePost)
 	mux.HandleFunc("GET /snippet/view/recent", app.snippetViewRecent)
 
-	return mux
+	return app.logRequests(commonHeaders(mux))
 }
